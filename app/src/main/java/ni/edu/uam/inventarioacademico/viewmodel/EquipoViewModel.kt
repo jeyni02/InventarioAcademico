@@ -11,23 +11,23 @@ class EquipoViewModel(
     private val repository: EquipoRepository
 ) : ViewModel() {
 
-    private val _equipos =
-        MutableStateFlow<List<Equipo>>(emptyList())
-
-    val equipos: StateFlow<List<Equipo>> =
-        _equipos.asStateFlow()
-
-    init {
-        viewModelScope.launch {
-            repository.obtenerTodos().collect {
-                _equipos.value = it
-            }
-        }
-    }
+    val equipos =
+        repository.obtenerTodos()
+            .stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(5000),
+                emptyList()
+            )
 
     fun insertar(equipo: Equipo) {
         viewModelScope.launch {
             repository.insertar(equipo)
+        }
+    }
+
+    fun eliminar(equipo: Equipo) {
+        viewModelScope.launch {
+            repository.eliminar(equipo)
         }
     }
 }

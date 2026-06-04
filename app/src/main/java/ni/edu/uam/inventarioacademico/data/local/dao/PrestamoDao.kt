@@ -13,6 +13,9 @@ interface PrestamoDao {
     @Update
     suspend fun actualizar(prestamo: Prestamo)
 
-    @Query("SELECT * FROM prestamos")
+    @Delete
+    suspend fun eliminar(prestamo: Prestamo)
+
+    @Query("SELECT * FROM prestamos ORDER BY id DESC")
     fun obtenerTodos(): Flow<List<Prestamo>>
 }

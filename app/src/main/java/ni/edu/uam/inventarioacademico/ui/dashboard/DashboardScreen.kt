@@ -14,6 +14,25 @@ import androidx.navigation.NavController
 fun DashboardScreen(
     navController: NavController
 ) {
+    Card(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+
+            Text(
+                text = "🎓 Inventario Académico",
+                style = MaterialTheme.typography.headlineMedium
+            )
+
+            Text(
+                text = "Gestión de Equipos Tecnológicos",
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+    }
 
     Column(
         modifier = Modifier

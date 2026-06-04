@@ -15,4 +15,8 @@ class PrestamoRepository(
     suspend fun insertar(prestamo: Prestamo) {
         prestamoDao.insertar(prestamo)
     }
+
+    suspend fun eliminar(prestamo: Prestamo) {
+        prestamoDao.eliminar(prestamo)
+    }
 }

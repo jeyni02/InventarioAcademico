@@ -7,9 +7,14 @@ import androidx.navigation.compose.rememberNavController
 import ni.edu.uam.inventarioacademico.ui.dashboard.DashboardScreen
 import ni.edu.uam.inventarioacademico.ui.equipos.EquiposScreen
 import ni.edu.uam.inventarioacademico.ui.prestamos.PrestamosScreen
+import ni.edu.uam.inventarioacademico.viewmodel.EquipoViewModel
+import ni.edu.uam.inventarioacademico.viewmodel.PrestamoViewModel
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(
+    equipoViewModel: EquipoViewModel,
+    prestamoViewModel: PrestamoViewModel
+) {
 
     val navController = rememberNavController()
 
@@ -23,11 +28,18 @@ fun AppNavigation() {
         }
 
         composable("equipos") {
-            EquiposScreen(navController)
+            EquiposScreen(
+                navController = navController,
+                viewModel = equipoViewModel
+            )
         }
 
         composable("prestamos") {
-            PrestamosScreen(navController)
+
+            PrestamosScreen(
+                navController = navController,
+                viewModel = prestamoViewModel
+            )
         }
     }
 }

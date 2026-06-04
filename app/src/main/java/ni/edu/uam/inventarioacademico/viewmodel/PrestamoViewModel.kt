@@ -11,23 +11,23 @@ class PrestamoViewModel(
     private val repository: PrestamoRepository
 ) : ViewModel() {
 
-    private val _prestamos =
-        MutableStateFlow<List<Prestamo>>(emptyList())
-
-    val prestamos: StateFlow<List<Prestamo>> =
-        _prestamos.asStateFlow()
-
-    init {
-        viewModelScope.launch {
-            repository.obtenerTodos().collect {
-                _prestamos.value = it
-            }
-        }
-    }
+    val prestamos =
+        repository.obtenerTodos()
+            .stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(5000),
+                emptyList()
+            )
 
     fun insertar(prestamo: Prestamo) {
         viewModelScope.launch {
             repository.insertar(prestamo)
+        }
+    }
+
+    fun eliminar(prestamo: Prestamo) {
+        viewModelScope.launch {
+            repository.eliminar(prestamo)
         }
     }
 }

@@ -16,9 +16,18 @@ interface EquipoDao {
     @Delete
     suspend fun eliminar(equipo: Equipo)
 
-    @Query("SELECT * FROM equipos")
+    @Query("SELECT * FROM equipos ORDER BY id DESC")
     fun obtenerTodos(): Flow<List<Equipo>>
 
     @Query("SELECT * FROM equipos WHERE disponible = 1")
     fun obtenerDisponibles(): Flow<List<Equipo>>
+
+    @Query("SELECT COUNT(*) FROM equipos")
+    fun contarEquipos(): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM equipos WHERE disponible = 1")
+    fun contarDisponibles(): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM equipos WHERE disponible = 0")
+    fun contarPrestados(): Flow<Int>
 }

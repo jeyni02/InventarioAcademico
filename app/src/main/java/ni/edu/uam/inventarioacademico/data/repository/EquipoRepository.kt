@@ -8,19 +8,24 @@ class EquipoRepository(
     private val equipoDao: EquipoDao
 ) {
 
-    fun obtenerTodos(): Flow<List<Equipo>> {
-        return equipoDao.obtenerTodos()
-    }
+    fun obtenerTodos(): Flow<List<Equipo>> =
+        equipoDao.obtenerTodos()
 
-    suspend fun insertar(equipo: Equipo) {
+    fun contarEquipos(): Flow<Int> =
+        equipoDao.contarEquipos()
+
+    fun contarDisponibles(): Flow<Int> =
+        equipoDao.contarDisponibles()
+
+    fun contarPrestados(): Flow<Int> =
+        equipoDao.contarPrestados()
+
+    suspend fun insertar(equipo: Equipo) =
         equipoDao.insertar(equipo)
-    }
 
-    suspend fun actualizar(equipo: Equipo) {
+    suspend fun actualizar(equipo: Equipo) =
         equipoDao.actualizar(equipo)
-    }
 
-    suspend fun eliminar(equipo: Equipo) {
+    suspend fun eliminar(equipo: Equipo) =
         equipoDao.eliminar(equipo)
-    }
 }
