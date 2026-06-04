@@ -19,6 +19,9 @@ interface EquipoDao {
     @Query("SELECT * FROM equipos ORDER BY id DESC")
     fun obtenerTodos(): Flow<List<Equipo>>
 
+    @Query("SELECT * FROM equipos WHERE id = :id")
+    suspend fun obtenerPorId(id: Int): Equipo?
+
     @Query("SELECT * FROM equipos WHERE disponible = 1")
     fun obtenerDisponibles(): Flow<List<Equipo>>
 

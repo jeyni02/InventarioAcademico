@@ -1,242 +1,225 @@
 package ni.edu.uam.inventarioacademico.ui.equipos
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import ni.edu.uam.inventarioacademico.data.local.entity.Equipo
 import ni.edu.uam.inventarioacademico.viewmodel.EquipoViewModel
+import java.io.File
+import java.io.FileOutputStream
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EquiposScreen(
     navController: NavController,
     viewModel: EquipoViewModel
 ) {
-
     var nombre by remember { mutableStateOf("") }
     var categoria by remember { mutableStateOf("") }
     var marca by remember { mutableStateOf("") }
     var serie by remember { mutableStateOf("") }
+    var equipoAEditar by remember { mutableStateOf<Equipo?>(null) }
 
+    val busqueda by viewModel.busqueda.collectAsState()
+    val filtroCategoria by viewModel.filtroCategoria.collectAsState()
     val equipos by viewModel.equipos.collectAsState()
+    val categoriasDisponibles by viewModel.categorias.collectAsState()
+
+    val context = LocalContext.current
+
+    LaunchedEffect(equipoAEditar) {
+        equipoAEditar?.let {
+            nombre = it.nombre
+            categoria = it.categoria
+            marca = it.marca
+            serie = it.numeroSerie
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(20.dp)
+            .padding(16.dp)
     ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "💻 Gestión de Equipos",
+                style = MaterialTheme.typography.headlineSmall
+            )
+            IconButton(onClick = {
+                val csv = viewModel.generarCSV()
+                guardarCSV(context, csv)
+            }) {
+                Icon(Icons.Default.Share, contentDescription = "Exportar CSV")
+            }
+        }
 
-        Text(
-            text = "💻 Gestión de Equipos",
-            style = MaterialTheme.typography.headlineMedium
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Buscador
+        OutlinedTextField(
+            value = busqueda,
+            onValueChange = { viewModel.actualizarBusqueda(it) },
+            label = { Text("Buscar por nombre o serie") },
+            modifier = Modifier.fillMaxWidth(),
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+            shape = RoundedCornerShape(12.dp)
         )
 
-        Text(
-            text = "Administra el inventario tecnológico del laboratorio",
-            style = MaterialTheme.typography.bodyMedium
-        )
+        Spacer(modifier = Modifier.height(8.dp))
 
-        Spacer(modifier = Modifier.height(20.dp))
+        // Filtro de Categorías
+        ScrollableTabRow(
+            selectedTabIndex = categoriasDisponibles.indexOf(filtroCategoria).coerceAtLeast(0),
+            edgePadding = 0.dp,
+            containerColor = androidx.compose.ui.graphics.Color.Transparent,
+            divider = {}
+        ) {
+            categoriasDisponibles.forEach { cat ->
+                FilterChip(
+                    selected = filtroCategoria == cat,
+                    onClick = { viewModel.actualizarFiltroCategoria(cat) },
+                    label = { Text(cat) },
+                    modifier = Modifier.padding(horizontal = 4.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         ElevatedCard(
-            modifier = Modifier.fillMaxWidth(),
-            elevation = CardDefaults.elevatedCardElevation(
-                defaultElevation = 6.dp
-            )
+            modifier = Modifier.fillMaxWidth()
         ) {
-
-            Column(
-                modifier = Modifier.padding(16.dp)
-            ) {
-
+            Column(modifier = Modifier.padding(12.dp)) {
                 Text(
-                    text = "➕ Registrar Equipo",
-                    style = MaterialTheme.typography.titleMedium
+                    text = if (equipoAEditar == null) "➕ Nuevo Registro" else "✏️ Editar Registro",
+                    style = MaterialTheme.typography.titleSmall
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 OutlinedTextField(
                     value = nombre,
                     onValueChange = { nombre = it },
-                    label = { Text("Nombre del equipo") },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp)
+                    label = { Text("Nombre") },
+                    modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.height(10.dp))
-
-                OutlinedTextField(
-                    value = categoria,
-                    onValueChange = { categoria = it },
-                    label = { Text("Categoría") },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp)
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                OutlinedTextField(
-                    value = marca,
-                    onValueChange = { marca = it },
-                    label = { Text("Marca") },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp)
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
+                Row(modifier = Modifier.padding(vertical = 8.dp)) {
+                    OutlinedTextField(
+                        value = categoria,
+                        onValueChange = { categoria = it },
+                        label = { Text("Categoría") },
+                        modifier = Modifier.weight(1f)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    OutlinedTextField(
+                        value = marca,
+                        onValueChange = { marca = it },
+                        label = { Text("Marca") },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
 
                 OutlinedTextField(
                     value = serie,
                     onValueChange = { serie = it },
                     label = { Text("Número de Serie") },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp)
+                    modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                Button(
-                    onClick = {
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Button(
+                        onClick = {
+                            if (nombre.isNotBlank() && categoria.isNotBlank()) {
+                                if (equipoAEditar == null) {
+                                    viewModel.insertar(Equipo(nombre = nombre, categoria = categoria, marca = marca, numeroSerie = serie))
+                                } else {
+                                    viewModel.actualizar(equipoAEditar!!.copy(nombre = nombre, categoria = categoria, marca = marca, numeroSerie = serie))
+                                    equipoAEditar = null
+                                }
+                                nombre = ""; categoria = ""; marca = ""; serie = ""
+                            }
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(if (equipoAEditar == null) "Guardar" else "Actualizar")
+                    }
 
-                        if (
-                            nombre.isNotBlank() &&
-                            categoria.isNotBlank()
-                        ) {
-
-                            viewModel.insertar(
-                                Equipo(
-                                    nombre = nombre,
-                                    categoria = categoria,
-                                    marca = marca,
-                                    numeroSerie = serie
-                                )
-                            )
-
-                            nombre = ""
-                            categoria = ""
-                            marca = ""
-                            serie = ""
+                    if (equipoAEditar != null) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        TextButton(onClick = {
+                            equipoAEditar = null
+                            nombre = ""; categoria = ""; marca = ""; serie = ""
+                        }) {
+                            Text("Cancelar")
                         }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(14.dp)
-                ) {
-                    Text("Guardar Equipo")
+                    }
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        Text(
-            text = "📋 Equipos Registrados",
-            style = MaterialTheme.typography.titleLarge
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        if (equipos.isEmpty()) {
-
-            ElevatedCard(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-
-                Column(
-                    modifier = Modifier.padding(24.dp)
-                ) {
-
-                    Text(
-                        text = "📭 No hay equipos registrados",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-
-                    Spacer(modifier = Modifier.height(6.dp))
-
-                    Text(
-                        text = "Agrega tu primer equipo usando el formulario superior."
-                    )
-                }
-            }
-
-        } else {
-
-            LazyColumn {
-
-                items(equipos) { equipo ->
-
-                    ElevatedCard(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 6.dp),
-                        elevation = CardDefaults.elevatedCardElevation(
-                            defaultElevation = 4.dp
-                        )
-                    ) {
-
-                        Column(
-                            modifier = Modifier.padding(16.dp)
-                        ) {
-
-                            Text(
-                                text = "💻 ${equipo.nombre}",
-                                style = MaterialTheme.typography.titleMedium
-                            )
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            Text(
-                                text = "📂 Categoría: ${equipo.categoria}"
-                            )
-
-                            Text(
-                                text = "🏢 Marca: ${equipo.marca}"
-                            )
-
-                            Text(
-                                text = "🔖 Serie: ${equipo.numeroSerie}"
-                            )
-
-                            Spacer(modifier = Modifier.height(12.dp))
-
-                            OutlinedButton(
-                                onClick = {
-                                    viewModel.eliminar(equipo)
-                                },
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Text("🗑 Eliminar")
+        LazyColumn(modifier = Modifier.weight(1f)) {
+            items(equipos) { equipo ->
+                ListItem(
+                    headlineContent = { Text(equipo.nombre) },
+                    supportingContent = { Text("${equipo.categoria} • SN: ${equipo.numeroSerie} • ${if (equipo.disponible) "✅" else "🔄"}") },
+                    trailingContent = {
+                        Row {
+                            IconButton(onClick = { equipoAEditar = equipo }) {
+                                Icon(Icons.Default.Edit, contentDescription = "Editar", tint = MaterialTheme.colorScheme.primary)
+                            }
+                            IconButton(onClick = { viewModel.eliminar(equipo) }) {
+                                Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = MaterialTheme.colorScheme.error)
                             }
                         }
                     }
-                }
-
-                item {
-
-                    Spacer(
-                        modifier = Modifier.height(24.dp)
-                    )
-
-                    OutlinedButton(
-                        onClick = {
-                            navController.navigate("dashboard")
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(14.dp)
-                    ) {
-                        Text("⬅ Volver al Dashboard")
-                    }
-
-                    Spacer(
-                        modifier = Modifier.height(40.dp)
-                    )
-                }
+                )
+                HorizontalDivider()
             }
         }
+
+        Button(
+            onClick = { navController.navigate("dashboard") },
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+        ) {
+            Text("⬅ Volver")
+        }
+    }
+}
+
+private fun guardarCSV(context: Context, contenido: String) {
+    try {
+        val fileName = "inventario_equipos.csv"
+        val file = File(context.getExternalFilesDir(null), fileName)
+        FileOutputStream(file).use { outputStream ->
+            outputStream.write(contenido.toByteArray())
+        }
+        Toast.makeText(context, "Exportado a: ${file.absolutePath}", Toast.LENGTH_LONG).show()
+    } catch (e: Exception) {
+        Toast.makeText(context, "Error al exportar: ${e.message}", Toast.LENGTH_SHORT).show()
     }
 }

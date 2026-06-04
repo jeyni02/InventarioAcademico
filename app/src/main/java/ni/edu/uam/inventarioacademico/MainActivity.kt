@@ -10,6 +10,7 @@ import ni.edu.uam.inventarioacademico.data.repository.EquipoRepository
 import ni.edu.uam.inventarioacademico.data.repository.PrestamoRepository
 import ni.edu.uam.inventarioacademico.ui.navigation.AppNavigation
 import ni.edu.uam.inventarioacademico.ui.theme.InventarioAcademicoTheme
+import ni.edu.uam.inventarioacademico.viewmodel.AuthViewModel
 import ni.edu.uam.inventarioacademico.viewmodel.EquipoViewModel
 import ni.edu.uam.inventarioacademico.viewmodel.PrestamoViewModel
 import ni.edu.uam.inventarioacademico.viewmodel.ViewModelFactory
@@ -32,7 +33,8 @@ class MainActivity : ComponentActivity() {
         )
 
         val prestamoRepository = PrestamoRepository(
-            database.prestamoDao()
+            database.prestamoDao(),
+            database.equipoDao()
         )
 
         // Factory
@@ -52,13 +54,16 @@ class MainActivity : ComponentActivity() {
             factory
         )[PrestamoViewModel::class.java]
 
+        val authViewModel = ViewModelProvider(this)[AuthViewModel::class.java]
+
         setContent {
 
             InventarioAcademicoTheme {
 
                 AppNavigation(
                     equipoViewModel = equipoViewModel,
-                    prestamoViewModel = prestamoViewModel
+                    prestamoViewModel = prestamoViewModel,
+                    authViewModel = authViewModel
                 )
             }
         }
